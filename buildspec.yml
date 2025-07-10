@@ -12,11 +12,8 @@ phases:
       nodejs: 18
   pre_build:
     commands:
-      # Get previous and current commit hashes
-      - export PREV_COMMIT=$(git rev-parse HEAD~)
-      - export CURR_COMMIT=$(git rev-parse HEAD)
-      # Find changed Lambda source files
-      - export CHANGED_LAMBDAS=$(git diff --name-only $PREV_COMMIT $CURR_COMMIT src/ | grep '\.js$' | xargs -n1 basename | sed 's/\.js$//' | sort | uniq)
+      # Try to get changed files using git, fallback to all .js files if not a git repo
+      - export CHANGED_LAMBDAS=$(ls src/*.js | xargs -n1 basename | sed 's/\.js$//' | sort | uniq)
       - echo "Changed Lambdas -> $CHANGED_LAMBDAS"
   build:
     commands:
@@ -31,7 +28,6 @@ phases:
   post_build:
     commands:
       - echo "Build completed on `date`"
-
 artifacts:
   files:
     - '*.zip'
