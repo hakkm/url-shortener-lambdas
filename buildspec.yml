@@ -1,6 +1,5 @@
 version: 0.2
 
-
 env:
   variables:
     S3_BUCKET_NAME: "urlshort-cloudfront-website"
@@ -23,11 +22,12 @@ phases:
           cd src
           zip ../${lambda}.zip ${lambda}.js
           cd ..
-          aws lambda update-function-code --function-name $lambda --zip-file fileb://${lambda}.zip --region $AWS_REGION
+          lambda_arn=$(aws lambda update-function-code --function-name $lambda --zip-file fileb://${lambda}.zip --region $AWS_REGION --query "FunctionArn" --output text)
+          echo "Deployed $lambda successfully, arn: $lambda_arn"
         done
   post_build:
     commands:
       - echo "Build completed on `date`"
 artifacts:
   files:
-    - '*.zip'
+    - "*.zip"

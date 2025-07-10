@@ -1,28 +1,28 @@
 import { DynamoDB } from 'aws-sdk'
-const dynamo = new DynamoDB.DocumentClient();
-const TABLE_NAME = process.env.TABLE_NAME || 'UrlShortenerTable';
+const dynamo = new DynamoDB.DocumentClient()
+const TABLE_NAME = process.env.TABLE_NAME || 'UrlShortenerTable'
 
 export async function handler(event) {
-    console.log('Received event:', JSON.stringify(event));
-    const shortId = event.pathParameters && event.pathParameters.shortId;
+    console.log('Received event:', JSON.stringify(event))
+    const shortId = event.pathParameters && event.pathParameters.shortId
     if (!shortId || typeof shortId !== 'string') {
-        console.error('Missing or invalid shortId:', shortId);
-        return { statusCode: 400, body: 'Missing or invalid shortId' };
+        console.error('Missing or invalid shortId:', shortId)
+        return { statusCode: 400, body: 'Missing or invalid shortId' }
     }
-    let item;
+    let item
     try {
         const result = await dynamo.get({
             TableName: TABLE_NAME,
             Key: { shortId }
-        }).promise();
-        item = result.Item;
+        }).promise()
+        item = result.Item
         if (!item) {
-            console.error('ShortId not found:', shortId);
-            return { statusCode: 404, body: 'Not found' };
+            console.error('ShortId not found:', shortId)
+            return { statusCode: 404, body: 'Not found' }
         }
     } catch (dbErr) {
-        console.error('DynamoDB get error:', dbErr);
-        return { statusCode: 500, body: 'Database error' };
+        console.error('DynamoDB get error:', dbErr)
+        return { statusCode: 500, body: 'Database error' }
     }
     try {
         await dynamo.update({
@@ -34,15 +34,15 @@ export async function handler(event) {
                 ':zero': 0,
                 ':now': new Date().toISOString()
             }
-        }).promise();
+        }).promise()
     } catch (dbErr) {
-        console.error('DynamoDB update error:', dbErr);
+        console.error('DynamoDB update error:', dbErr)
         // Continue to redirect even if update fails
     }
-    console.log('Redirecting to:', item.longUrl);
+    console.log('Redirecting to:', item.longUrl)
     return {
         statusCode: 301,
         headers: { Location: item.longUrl },
         body: ''
-    };
+    }
 }
