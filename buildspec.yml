@@ -13,12 +13,12 @@ phases:
   pre_build:
     commands:
       # Try to get changed files using git, fallback to all .js files if not a git repo
-      - export CHANGED_LAMBDAS=$(ls src/*.js | xargs -n1 basename | sed 's/\.js$//' | sort | uniq)
+      - export CHANGED_LAMBDAS=$(ls src/*.js | xargs -n1 basename | sed 's/\.js$//')
       - echo "Changed Lambdas -> $CHANGED_LAMBDAS"
   build:
     commands:
       - |
-        for lambda in $CHANGED_LAMBDAS; do
+        echo "$CHANGED_LAMBDAS" | while read -r lambda; do
           echo "Packaging and deploying $lambda"
           cd src
           zip ../${lambda}.zip ${lambda}.js
