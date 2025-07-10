@@ -1,8 +1,8 @@
-const AWS = require('aws-sdk');
-const dynamo = new AWS.DynamoDB.DocumentClient();
+import { DynamoDB } from 'aws-sdk'
+const dynamo = new DynamoDB.DocumentClient();
 const TABLE_NAME = process.env.TABLE_NAME || 'UrlShortenerTable';
 
-exports.handler = async (event) => {
+export async function handler(event) {
     console.log('Received event:', JSON.stringify(event));
     const shortId = event.pathParameters && event.pathParameters.shortId;
     if (!shortId || typeof shortId !== 'string') {
@@ -45,4 +45,4 @@ exports.handler = async (event) => {
         headers: { Location: item.longUrl },
         body: ''
     };
-};
+}

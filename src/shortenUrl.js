@@ -1,11 +1,11 @@
-const AWS = require('aws-sdk');
-const crypto = require('crypto');
+import { DynamoDB } from 'aws-sdk'
+import { randomBytes } from 'crypto'
 
-const dynamo = new AWS.DynamoDB.DocumentClient();
+const dynamo = new DynamoDB.DocumentClient();
 const TABLE_NAME = process.env.TABLE_NAME || 'UrlShortenerTable';
 const BASE_URL = process.env.BASE_URL || 'https://short.url';
 
-exports.handler = async (event) => {
+export async function handler(event) {
     console.log('Received event:', JSON.stringify(event));
     try {
         let body;
@@ -20,7 +20,7 @@ exports.handler = async (event) => {
             console.error('Missing or invalid url:', longUrl);
             return { statusCode: 400, body: JSON.stringify({ error: 'Missing or invalid url' }) };
         }
-        const shortId = crypto.randomBytes(4).toString('hex');
+        const shortId = randomBytes(4).toString('hex');
         const item = {
             shortId,
             longUrl,
@@ -46,4 +46,4 @@ exports.handler = async (event) => {
         console.error('Unhandled error:', err);
         return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
     }
-};
+}
