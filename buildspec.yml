@@ -1,0 +1,37 @@
+version: 0.2
+
+
+env:
+  variables:
+    S3_BUCKET_NAME: "urlshort-cloudfront-website"
+    CLOUDFRONT_DISTRIBUTION_ID: "E135O407T9WZ07"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+  pre_build:
+    commands:
+      # Get previous and current commit hashes
+      - export PREV_COMMIT=$(git rev-parse HEAD~)
+      - export CURR_COMMIT=$(git rev-parse HEAD)
+      # Find changed Lambda source files
+      - export CHANGED_LAMBDAS=$(git diff --name-only $PREV_COMMIT $CURR_COMMIT src/ | grep '\.js$' | xargs -n1 basename | sed 's/\.js$//' | sort | uniq)
+      - echo "Changed Lambdas -> $CHANGED_LAMBDAS"
+  build:
+    commands:
+      - |
+        for lambda in $CHANGED_LAMBDAS; do
+          echo "Packaging and deploying $lambda"
+          cd src
+          zip ../${lambda}.zip ${lambda}.js
+          cd ..
+          aws lambda update-function-code --function-name $lambda --zip-file fileb://${lambda}.zip --region $AWS_REGION
+        done
+  post_build:
+    commands:
+      - echo "Build completed on `date`"
+
+artifacts:
+  files:
+    - '*.zip'
