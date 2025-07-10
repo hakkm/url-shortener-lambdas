@@ -1,9 +1,9 @@
-const AWS = require('aws-sdk');
-const dynamo = new AWS.DynamoDB.DocumentClient();
+import { DynamoDB } from 'aws-sdk'
+const dynamo = new DynamoDB.DocumentClient();
 const TABLE_NAME = process.env.TABLE_NAME || 'UrlShortenerTable';
 const BASE_URL = process.env.BASE_URL || 'https://short.url';
 
-exports.handler = async (event) => {
+export async function handler(event) {
     console.log('Received event:', JSON.stringify(event));
     const params = event.queryStringParameters || {};
     const shortUrl = params.url;
@@ -38,4 +38,4 @@ exports.handler = async (event) => {
         statusCode: 200,
         body: JSON.stringify(response)
     };
-};
+}
